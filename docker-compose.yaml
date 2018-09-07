@@ -1,0 +1,66 @@
+version : '2'
+services :
+   mysql :
+     build :
+        context : ~/Documents/GO_APP/src/agodocker1/mysql #指定dockerfile所在目录
+        dockerfile : dockerfile #指定dockerfile文件
+     ports :
+        - "3308:3306" #映射端口 “服务端口”:“docker容器内部端口”
+     volumes :
+        - ~/Documents/GO_APP/src/agodocker1/mysql/data:/var/lib/mysql
+     environment :     #初始密码
+        - MYSQL_ROOT_PASSWORD=123456
+     container_name : mysql
+     restart : always   
+   php7 :
+     build :
+        context : ~/Documents/GO_APP/src/agodocker1/php7
+        dockerfile : dockerfile
+     ports :
+        - "9012:9000"
+     volumes :
+        - ~/web:/usr/local/nginx/html
+        - ~/Documents/GO_APP/src/agodocker1/php7/conf/php.ini:/usr/local/php7/lib/php.ini:ro
+     container_name : php7
+     links :
+        - mysql
+     restart : always
+   nginx : 
+     build :
+        context : ~/Documents/GO_APP/src/agodocker1/nginx
+        dockerfile : dockerfile
+     ports :
+        - "808:80"
+        - "434:433"
+     volumes :
+        - ~/Documents/GO_APP/src/agodocker1/nginx/logs:/usr/local/nginx/logs
+        - ~/web:/usr/local/nginx/html
+        - ~/Documents/GO_APP/src/agodocker1/nginx/conf/nginx.conf:/usr/local/nginx/conf/nginx.conf:ro
+        - ~/Documents/GO_APP/src/agodocker1/nginx/conf/vhost:/usr/local/nginx/conf/vhost:ro
+     container_name : nginx
+     links :
+        - php7
+     restart : always
+   phpmyadmin :
+     image : phpmyadmin/phpmyadmin
+     container_name : myadmin
+     volumes:
+        - /sessions
+     ports :
+        - 8080:80
+     environment :
+        - PMA_ARBITRARY=1
+        - TESTSUITE_PASSWORD=123456
+     depends_on :
+        - mysql
+     restart: always
+   redis :
+     image : redis
+     container_name : redis
+     volumes :
+        - ~/Documents/GO_APP/src/agodocker1/redis/data:/data
+        - ~/Documents/GO_APP/src/agodocker1/redis/redis.conf:/usr/local/etc/redis/redis.conf
+     ports :
+        - 6379:6379
+     command : redis-server /usr/local/etc/redis/redis.conf
+     restart: always

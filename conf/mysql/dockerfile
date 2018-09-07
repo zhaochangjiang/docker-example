@@ -1,0 +1,4 @@
+FROM mysql:5.7
+MAINTAINER karl.zhao <zhaocj2015@163.com>
+
+ENV TZ "Asia/Shanghai"
